@@ -9,7 +9,6 @@ import (
 )
 
 func main() {
-	// add params
 	repos := repository.NewRepository()
 	services := service.NewService(repos)
 	handlers := handler.NewHandler(services)
