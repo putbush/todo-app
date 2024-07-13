@@ -15,6 +15,10 @@ type Repository struct {
 	TodoItem
 }
 
-func NewRepository(authorization Authorization, todoList TodoList, todoItem TodoItem) *Repository {
-	return &Repository{Authorization: authorization, TodoList: todoList, TodoItem: todoItem}
+//func NewRepository(authorization Authorization, todoList TodoList, todoItem TodoItem) *Repository {
+//	return &Repository{Authorization: authorization, TodoList: todoList, TodoItem: todoItem}
+//}
+
+func NewRepository() *Repository {
+	return &Repository{}
 }
