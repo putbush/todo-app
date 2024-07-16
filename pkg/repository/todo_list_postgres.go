@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 	"github.com/jmoiron/sqlx"
+	"strings"
 	todo "todo-app"
 )
 
@@ -62,4 +63,39 @@ func (t *TodoListPostgres) GetListByID(listID, userID int) (todo.TodoList, error
 
 	return list, nil
 
+}
+
+func (t *TodoListPostgres) DeleteListByID(listID, userID int) error {
+	query := fmt.Sprintf("DELETE FROM %s tl USING %s ul WHERE ul.list_id=tl.id AND ul.list_id=$1 AND ul.user_id=$2", TodoListsTable, usersListsTable)
+	_, err := t.db.Exec(query, listID, userID)
+	return err
+}
+
+func (t *TodoListPostgres) Update(listID, userID int, input todo.UpdateListInput) (todo.TodoList, error) {
+	setValues := make([]string, 0)
+	args := make([]interface{}, 0)
+	argID := 1
+
+	if input.Title != nil {
+		setValues = append(setValues, fmt.Sprintf("title=$%d", argID))
+		args = append(args, input.Title)
+		argID++
+	}
+
+	if input.Description != nil {
+		setValues = append(setValues, fmt.Sprintf("description=$%d", argID))
+		args = append(args, input.Description)
+		argID++
+	}
+
+	setQuery := strings.Join(setValues, ", ")
+	args = append(args, listID, userID)
+
+	var newList todo.TodoList
+	query := fmt.Sprintf("UPDATE %s tl SET %s FROM %s ul WHERE tl.id = ul.list_id AND ul.list_id=$%d AND ul.user_id=$%d RETURNING tl.*",
+		TodoListsTable, setQuery, usersListsTable, argID, argID+1)
+	if err := t.db.Get(&newList, query, args...); err != nil {
+		return newList, err
+	}
+	return newList, nil
 }

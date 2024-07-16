@@ -70,9 +70,52 @@ func (h *Handler) createList(c *gin.Context) {
 }
 
 func (h *Handler) updateList(c *gin.Context) {
+	userID, err := getUserID(c)
+	if err != nil {
+		return
+	}
 
+	listID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResonse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	var input todo.UpdateListInput
+	if err := c.BindJSON(&input); err != nil {
+		newErrorResonse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err = input.Validate(); err != nil {
+		newErrorResonse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+	newList, err := h.services.Update(listID, userID, input)
+	if err != nil {
+		newErrorResonse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, newList)
 }
 
 func (h *Handler) deleteList(c *gin.Context) {
+	userID, err := getUserID(c)
+	if err != nil {
+		return
+	}
 
+	listID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		newErrorResonse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if err = h.services.DeleteListByID(listID, userID); err != nil {
+		newErrorResonse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, statusResponse{Status: "ok"})
 }
