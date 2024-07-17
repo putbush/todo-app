@@ -8,11 +8,11 @@ type TodoList struct {
 	Description string `json:"description" db:"description"`
 }
 
-type TodoItems struct {
-	Id          int    `json:"id"`
-	Title       string `json:"title"`
-	Description string `json:"description"`
-	Done        bool   `json:"done"`
+type Item struct {
+	Id          int    `json:"id" db:"id"`
+	Title       string `json:"title" db:"title"`
+	Description string `json:"description" db:"description" binding:"required"`
+	Done        bool   `json:"done" db:"done"`
 }
 
 type ListItem struct {
@@ -34,6 +34,19 @@ type UpdateListInput struct {
 
 func (u UpdateListInput) Validate() error {
 	if u.Title == nil && u.Description == nil {
+		return errors.New("update structure has no values")
+	}
+	return nil
+}
+
+type UpdateItemInput struct {
+	Title       *string `json:"title" db:"title"`
+	Description *string `json:"description" db:"description"`
+	Done        *bool   `json:"done" db:"done"`
+}
+
+func (u UpdateItemInput) Validate() error {
+	if u.Title == nil && u.Description == nil && u.Done == nil {
 		return errors.New("update structure has no values")
 	}
 	return nil

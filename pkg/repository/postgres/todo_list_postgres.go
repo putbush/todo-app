@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 import (
 	"fmt"
@@ -29,7 +29,7 @@ func (t *TodoListPostgres) CreateList(list todo.TodoList, userId int) (int, erro
 		return 0, err
 	}
 
-	createUserListQuery := fmt.Sprintf("INSERT INTO %s (user_id, list_id) VALUES ($1, $2)", usersListsTable)
+	createUserListQuery := fmt.Sprintf("INSERT INTO %s (user_id, list_id) VALUES ($1, $2)", UsersListsTable)
 	_, err = tx.Exec(createUserListQuery, userId, id)
 	if err != nil {
 		_ = tx.Rollback()
@@ -45,7 +45,7 @@ func (t *TodoListPostgres) CreateList(list todo.TodoList, userId int) (int, erro
 func (t *TodoListPostgres) GetAllLists(userID int) ([]todo.TodoList, error) {
 	var lists []todo.TodoList
 
-	query := fmt.Sprintf("SELECT tl.id, tl.title, tl.description FROM %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1", TodoListsTable, usersListsTable)
+	query := fmt.Sprintf("SELECT tl.id, tl.title, tl.description FROM %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1", TodoListsTable, UsersListsTable)
 	if err := t.db.Select(&lists, query, userID); err != nil {
 		return lists, err
 	}
@@ -56,17 +56,16 @@ func (t *TodoListPostgres) GetAllLists(userID int) ([]todo.TodoList, error) {
 func (t *TodoListPostgres) GetListByID(listID, userID int) (todo.TodoList, error) {
 	var list todo.TodoList
 
-	query := fmt.Sprintf("SELECT tl.* FROM %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1 and tl.id = $2", TodoListsTable, usersListsTable)
+	query := fmt.Sprintf("SELECT tl.* FROM %s tl INNER JOIN %s ul on tl.id = ul.list_id WHERE ul.user_id = $1 and tl.id = $2", TodoListsTable, UsersListsTable)
 	if err := t.db.Get(&list, query, userID, listID); err != nil {
 		return list, err
 	}
 
 	return list, nil
-
 }
 
 func (t *TodoListPostgres) DeleteListByID(listID, userID int) error {
-	query := fmt.Sprintf("DELETE FROM %s tl USING %s ul WHERE ul.list_id=tl.id AND ul.list_id=$1 AND ul.user_id=$2", TodoListsTable, usersListsTable)
+	query := fmt.Sprintf("DELETE FROM %s tl USING %s ul WHERE ul.list_id=tl.id AND ul.list_id=$1 AND ul.user_id=$2", TodoListsTable, UsersListsTable)
 	_, err := t.db.Exec(query, listID, userID)
 	return err
 }
@@ -93,7 +92,7 @@ func (t *TodoListPostgres) Update(listID, userID int, input todo.UpdateListInput
 
 	var newList todo.TodoList
 	query := fmt.Sprintf("UPDATE %s tl SET %s FROM %s ul WHERE tl.id = ul.list_id AND ul.list_id=$%d AND ul.user_id=$%d RETURNING tl.*",
-		TodoListsTable, setQuery, usersListsTable, argID, argID+1)
+		TodoListsTable, setQuery, UsersListsTable, argID, argID+1)
 	if err := t.db.Get(&newList, query, args...); err != nil {
 		return newList, err
 	}

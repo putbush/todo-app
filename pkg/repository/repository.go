@@ -3,14 +3,7 @@ package repository
 import (
 	"github.com/jmoiron/sqlx"
 	todo "todo-app"
-)
-
-const (
-	UsersTable      = "users"
-	TodoListsTable  = "todo_lists"
-	usersListsTable = "users_lists"
-	todoItemsTable  = "todo_items"
-	listsItemsTable = "lists_items"
+	"todo-app/pkg/repository/postgres"
 )
 
 type Authorization interface {
@@ -27,6 +20,11 @@ type TodoList interface {
 }
 
 type TodoItem interface {
+	CreateItem(item todo.Item, listID int) (int, error)
+	GetAllItems(userID, listID int) ([]todo.Item, error)
+	GetItemByID(userID, itemID int) (todo.Item, error)
+	Update(userID, itemID int, input todo.UpdateItemInput) (todo.Item, error)
+	DeleteItemByID(userID, itemID int) error
 }
 
 type Repository struct {
@@ -37,7 +35,8 @@ type Repository struct {
 
 func NewRepository(db *sqlx.DB) *Repository {
 	return &Repository{
-		Authorization: NewAuthPostgres(db),
-		TodoList:      NewTodoListPostgres(db),
+		Authorization: postgres.NewAuthPostgres(db),
+		TodoList:      postgres.NewTodoListPostgres(db),
+		TodoItem:      postgres.NewTodoItemPostgres(db),
 	}
 }

@@ -7,10 +7,6 @@ import (
 	todo "todo-app"
 )
 
-type getAllListsResponse struct {
-	Data []todo.TodoList `json:"data"`
-}
-
 func (h *Handler) getAllLists(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
@@ -23,7 +19,7 @@ func (h *Handler) getAllLists(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, getAllListsResponse{Data: lists})
+	c.JSON(http.StatusOK, lists)
 }
 
 func (h *Handler) getListByID(c *gin.Context) {
@@ -91,7 +87,7 @@ func (h *Handler) updateList(c *gin.Context) {
 		newErrorResonse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	newList, err := h.services.Update(listID, userID, input)
+	newList, err := h.services.TodoList.Update(listID, userID, input)
 	if err != nil {
 		newErrorResonse(c, http.StatusInternalServerError, err.Error())
 		return
