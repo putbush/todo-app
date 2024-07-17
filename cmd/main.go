@@ -1,7 +1,14 @@
 package main
 
 import (
+	"context"
 	"github.com/sirupsen/logrus"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 	todo "todo-app"
 	"todo-app/pkg/config"
 	"todo-app/pkg/handler"
@@ -36,8 +43,29 @@ func main() {
 
 	srv := new(todo.Server)
 
-	if err = srv.Run(cfg.Port, handlers.InitRoutes()); err != nil {
-		logrus.Fatal(err)
-	}
+	go func() {
+		if err = srv.Run(cfg.Port, handlers.InitRoutes()); err != nil && err != http.ErrServerClosed {
+			logrus.Fatal(err)
+		}
+	}()
 
+	logrus.Println("TodoApp started")
+
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	log.Println("Shutdown Server ...")
+
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	if err = srv.Shutdown(ctx); err != nil {
+		logrus.Fatal("Server Shutdown:", err)
+	}
+	// catching ctx.Done(). timeout of 5 seconds.
+	select {
+	case <-ctx.Done():
+		logrus.Println("timeout of 3 seconds.")
+	}
+	logrus.Println("Server exiting")
+	_ = db.Close()
 }
