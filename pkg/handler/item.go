@@ -7,6 +7,10 @@ import (
 	todo "todo-app"
 )
 
+type getAllItemsResponse struct {
+	Data []todo.Item `json:"data"`
+}
+
 func (h *Handler) getAllItems(c *gin.Context) {
 	userID, err := getUserID(c)
 	if err != nil {
@@ -25,7 +29,9 @@ func (h *Handler) getAllItems(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, items)
+	c.JSON(http.StatusOK, getAllItemsResponse{
+		Data: items,
+	})
 }
 
 func (h *Handler) getItemByID(c *gin.Context) {
