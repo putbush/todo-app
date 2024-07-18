@@ -13,3 +13,8 @@
 ```
 make build && make run
 ```
+
+#
+**Проект написан с целью обучения по видеоматериалам с YouTube**
+
+**Автор проекта - [Maksim Zhashkevych](https://github.com/zhashkevych/)**
