@@ -10,4 +10,6 @@
 * Graceful Shutdown
 
 ## Для запуска приложения:
-> make build && make run
+```
+make build && make run
+```
